@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { dbRepository } from '@/lib/storage';
-import { getSupabaseConfigStatus } from '@/lib/supabaseClient';
+import { getSupabaseConfigStatus, checkDatabaseConnection, DatabaseConnectionStatus } from '@/lib/supabaseClient';
 import { AuditLog } from '@/lib/dbTypes';
 import { Card } from '@/components/common/Card';
 import { Badge } from '@/components/common/Badge';
@@ -13,17 +13,31 @@ import {
   RotateCcw, 
   CheckCircle2, 
   AlertTriangle,
-  Lock
+  Lock,
+  RefreshCw
 } from 'lucide-react';
 import { formatInIST } from '@/features/newsletter/dateUtils';
 
 export const SystemHealth: React.FC = () => {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [liveDbStatus, setLiveDbStatus] = useState<DatabaseConnectionStatus | null>(null);
+  const [isTestingDb, setIsTestingDb] = useState(false);
   const supabaseStatus = getSupabaseConfigStatus();
 
   useEffect(() => {
     setAuditLogs(dbRepository.getAuditLogs());
+    runDbCheck();
   }, []);
+
+  const runDbCheck = async () => {
+    setIsTestingDb(true);
+    try {
+      const status = await checkDatabaseConnection();
+      setLiveDbStatus(status);
+    } finally {
+      setIsTestingDb(false);
+    }
+  };
 
   const handleResetDemoData = () => {
     if (confirm('Are you sure you want to re-seed demo data to original factory defaults? This will restore initial exams, attempts, and newsletters.')) {
@@ -35,11 +49,23 @@ export const SystemHealth: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-bold text-slate-900">System Telemetry & Operational Health</h2>
-        <p className="text-xs text-slate-500">
-          Inspect backend status, security event logs, and connection health without credential exposure.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold text-slate-900">System Telemetry & Operational Health</h2>
+          <p className="text-xs text-slate-500">
+            Inspect backend status, live database latency, security event logs, and connection health without credential exposure.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={runDbCheck}
+          isLoading={isTestingDb}
+          className="text-xs self-start sm:self-auto"
+        >
+          <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+          Test Database Connection
+        </Button>
       </div>
 
       {/* Integration Status Cards */}
@@ -51,8 +77,8 @@ export const SystemHealth: React.FC = () => {
           </div>
           <p className="text-sm font-bold text-slate-900">{supabaseStatus.mode}</p>
           <div className="flex items-center gap-1.5 text-xs">
-            <Badge variant={supabaseStatus.isConfigured ? 'success' : 'teal'} size="sm">
-              {supabaseStatus.isConfigured ? 'Cloud Connected' : 'Offline Verified Engine'}
+            <Badge variant={liveDbStatus?.ok ? 'success' : supabaseStatus.isConfigured ? 'warning' : 'teal'} size="sm">
+              {liveDbStatus?.ok ? `Live (${liveDbStatus.latencyMs}ms)` : supabaseStatus.isConfigured ? 'Connection Error' : 'Offline Verified Sandbox'}
             </Badge>
           </div>
           <p className="text-[10px] text-slate-400 font-mono truncate">{supabaseStatus.url}</p>
@@ -87,6 +113,30 @@ export const SystemHealth: React.FC = () => {
           <p className="text-[10px] text-slate-400 font-mono">Server-Side Scoring Enforced</p>
         </Card>
       </div>
+
+      {/* Database Diagnostic Details Banner */}
+      {liveDbStatus && (
+        <div className={`p-4 rounded-2xl border text-xs flex items-start gap-3 ${
+          liveDbStatus.ok 
+            ? 'bg-emerald-50/80 border-emerald-200 text-emerald-900' 
+            : 'bg-slate-100 border-slate-200 text-slate-800'
+        }`}>
+          {liveDbStatus.ok ? (
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+          ) : (
+            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          )}
+          <div className="space-y-1">
+            <div className="font-bold text-sm">
+              {liveDbStatus.ok ? 'PostgreSQL Connection Verified' : 'Database Connectivity Status'}
+            </div>
+            <p className="text-xs leading-relaxed">{liveDbStatus.message}</p>
+            {liveDbStatus.latencyMs !== undefined && (
+              <p className="font-mono text-[11px] opacity-80">Round-trip query latency: {liveDbStatus.latencyMs} ms</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Database Reset Action */}
       <Card className="p-4 bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -156,4 +206,3 @@ export const SystemHealth: React.FC = () => {
     </div>
   );
 };
-

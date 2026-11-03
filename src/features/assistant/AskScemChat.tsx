@@ -26,13 +26,13 @@ const PROMPT_SUGGESTIONS = [
 const INITIAL_GREETING: ChatMessageItem = {
   id: 'msg-init',
   role: 'assistant',
-  content: `Namaskara! I am **Ask SCEM AI**, your campus-grounded academic assistant for **Sahyadri College of Engineering & Management, Mangaluru**.
+  content: `Namaskara! I am **Ask Sahyadri AI**, your campus-grounded intelligence assistant for **Sahyadri College of Engineering & Management (SCEM), Mangaluru**.
 
-I answer questions strictly using official SCEM regulations, academic notices, course evaluation schemes, and verified campus documents.
+I answer queries strictly using official SCEM regulations, placement drive guidelines, autonomous evaluation schemes, and verified campus documents.
 
-How may I assist your academic journey today?`,
+How may I assist your placement preparation or campus queries today?`,
   grounded: true,
-  modelUsed: 'SCEM Grounded Core',
+  modelUsed: 'Sahyadri Grounded Core',
   timestamp: formatInIST(new Date(), true),
 };
 

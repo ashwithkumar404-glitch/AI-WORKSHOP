@@ -40,7 +40,7 @@ export const Layout: React.FC = () => {
           {/* Institutional Footer */}
           <footer className="py-4 px-6 border-t border-slate-200/80 bg-white text-center text-xs text-slate-500">
             <p>
-              CampusPilot AI • Sahyadri College of Engineering & Management (SCEM), Adyar, Mangaluru, Karnataka - 575007.
+              SAHYADRI ONE • Campus Intelligence & Placement Readiness Platform • Sahyadri College of Engineering & Management (SCEM), Adyar, Mangaluru, Karnataka - 575007.
             </p>
             <p className="text-[10px] text-slate-400 mt-0.5">
               Autonomous Institute Affiliated to Visvesvaraya Technological University (VTU), Belagavi. NAAC 'A' Grade & NBA Accredited.

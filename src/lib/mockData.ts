@@ -8,6 +8,26 @@ import {
   Newsletter, 
   KnowledgeDocument 
 } from './dbTypes';
+import {
+  PLACEMENT_APTITUDE_EXAMS,
+  PLACEMENT_QUESTIONS,
+  PLACEMENT_QUESTION_KEYS,
+  VERIFIED_JOB_OPPORTUNITIES,
+  VERIFIED_STUDY_MATERIALS,
+  CODING_LAB_PROBLEMS,
+  WORLD_TECH_NEWS,
+  VERIFIED_INTERVIEW_EXPERIENCES,
+  VERIFIED_STUDENT_ACHIEVEMENTS,
+} from './placementMockData';
+
+export {
+  VERIFIED_JOB_OPPORTUNITIES,
+  VERIFIED_STUDY_MATERIALS,
+  CODING_LAB_PROBLEMS,
+  WORLD_TECH_NEWS,
+  VERIFIED_INTERVIEW_EXPERIENCES,
+  VERIFIED_STUDENT_ACHIEVEMENTS,
+};
 
 export const INITIAL_STUDENT_USER: UserProfile = {
   id: 'd9b2e88a-7c34-4b52-9d3e-9087c53e1a01',
@@ -103,7 +123,8 @@ export const INITIAL_EXAMS: Exam[] = [
     created_by: INITIAL_ADMIN_USER.id,
     created_at: '2026-11-01T08:00:00Z',
     updated_at: '2026-11-01T08:00:00Z',
-  }
+  },
+  ...PLACEMENT_APTITUDE_EXAMS
 ];
 
 export const INITIAL_QUESTIONS: Question[] = [
@@ -244,7 +265,8 @@ export const INITIAL_QUESTIONS: Question[] = [
     topic: 'Relational Algebra',
     order_index: 4,
     created_at: '2026-10-28T09:08:00Z',
-  }
+  },
+  ...PLACEMENT_QUESTIONS
 ];
 
 export const INITIAL_QUESTION_KEYS: QuestionKey[] = [
@@ -292,7 +314,8 @@ export const INITIAL_QUESTION_KEYS: QuestionKey[] = [
     question_id: 'q-dbms-4',
     correct_option_id: 'B',
     explanation: 'The Select operator (sigma) performs horizontal partitioning based on row conditions.'
-  }
+  },
+  ...PLACEMENT_QUESTION_KEYS
 ];
 
 // Seed initial attempt for student Aditi Rao

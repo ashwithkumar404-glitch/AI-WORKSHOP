@@ -28,7 +28,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileNav, onProfileClic
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-campus-teal-700 bg-campus-teal-50 px-2.5 py-0.5 rounded-full border border-campus-teal-200/60 hidden sm:inline-block">
-                SCEM Academic Portal
+                Sahyadri ONE • Campus Intelligence
               </span>
               <span className="text-xs text-slate-500 font-medium hidden sm:inline-block">
                 • {todayFormatted}

@@ -7,7 +7,14 @@ import {
   ExamResponse, 
   Newsletter, 
   KnowledgeDocument,
-  AuditLog
+  AuditLog,
+  JobOpportunity,
+  StudyMaterial,
+  CodingProblem,
+  CodingSubmission,
+  WorldNewsArticle,
+  InterviewExperience,
+  StudentAchievement
 } from './dbTypes';
 import {
   INITIAL_STUDENT_USER,
@@ -18,7 +25,13 @@ import {
   INITIAL_ATTEMPTS,
   INITIAL_RESPONSES,
   INITIAL_NEWSLETTERS,
-  INITIAL_KNOWLEDGE_DOCS
+  INITIAL_KNOWLEDGE_DOCS,
+  VERIFIED_JOB_OPPORTUNITIES,
+  VERIFIED_STUDY_MATERIALS,
+  CODING_LAB_PROBLEMS,
+  WORLD_TECH_NEWS,
+  VERIFIED_INTERVIEW_EXPERIENCES,
+  VERIFIED_STUDENT_ACHIEVEMENTS
 } from './mockData';
 
 const STORAGE_KEYS = {
@@ -32,7 +45,14 @@ const STORAGE_KEYS = {
   NEWSLETTERS: 'campuspilot_newsletters',
   KNOWLEDGE_DOCS: 'campuspilot_knowledge_docs',
   AUDIT_LOGS: 'campuspilot_audit_logs',
-  IS_INITIALIZED: 'campuspilot_seeded_v1',
+  JOBS: 'sahyadri_jobs',
+  STUDY_MATERIALS: 'sahyadri_study_materials',
+  CODING_PROBLEMS: 'sahyadri_coding_problems',
+  CODING_SUBMISSIONS: 'sahyadri_coding_submissions',
+  WORLD_NEWS: 'sahyadri_world_news',
+  INTERVIEW_EXPERIENCES: 'sahyadri_interview_experiences',
+  STUDENT_ACHIEVEMENTS: 'sahyadri_achievements',
+  IS_INITIALIZED: 'sahyadri_one_v2',
 };
 
 class LocalRepository {
@@ -61,6 +81,13 @@ class LocalRepository {
     localStorage.setItem(STORAGE_KEYS.RESPONSES, JSON.stringify(INITIAL_RESPONSES));
     localStorage.setItem(STORAGE_KEYS.NEWSLETTERS, JSON.stringify(INITIAL_NEWSLETTERS));
     localStorage.setItem(STORAGE_KEYS.KNOWLEDGE_DOCS, JSON.stringify(INITIAL_KNOWLEDGE_DOCS));
+    localStorage.setItem(STORAGE_KEYS.JOBS, JSON.stringify(VERIFIED_JOB_OPPORTUNITIES));
+    localStorage.setItem(STORAGE_KEYS.STUDY_MATERIALS, JSON.stringify(VERIFIED_STUDY_MATERIALS));
+    localStorage.setItem(STORAGE_KEYS.CODING_PROBLEMS, JSON.stringify(CODING_LAB_PROBLEMS));
+    localStorage.setItem(STORAGE_KEYS.CODING_SUBMISSIONS, JSON.stringify([]));
+    localStorage.setItem(STORAGE_KEYS.WORLD_NEWS, JSON.stringify(WORLD_TECH_NEWS));
+    localStorage.setItem(STORAGE_KEYS.INTERVIEW_EXPERIENCES, JSON.stringify(VERIFIED_INTERVIEW_EXPERIENCES));
+    localStorage.setItem(STORAGE_KEYS.STUDENT_ACHIEVEMENTS, JSON.stringify(VERIFIED_STUDENT_ACHIEVEMENTS));
     localStorage.setItem(STORAGE_KEYS.AUDIT_LOGS, JSON.stringify([]));
     localStorage.setItem(STORAGE_KEYS.IS_INITIALIZED, 'true');
     this.notifyChange('all');
@@ -121,7 +148,18 @@ class LocalRepository {
     const currentUser = this.getCurrentUser();
     const profiles = this.getProfiles();
     const index = profiles.findIndex(p => p.id === updated.id);
-    if (index === -1) return;
+    if (index === -1) {
+      // New profile creation - strictly student unless created by admin
+      const safeRole = currentUser?.role === 'admin' ? (updated.role || 'student') : 'student';
+      profiles.push({
+        ...updated,
+        role: safeRole,
+        created_at: updated.created_at || new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+      this.setItems(STORAGE_KEYS.PROFILES, profiles);
+      return;
+    }
 
     // Security check: non-admin cannot change their own role!
     if (currentUser?.role !== 'admin' && updated.role !== profiles[index].role) {
@@ -411,6 +449,145 @@ class LocalRepository {
     logs.unshift(log);
     if (logs.length > 500) logs.pop();
     this.setItems(STORAGE_KEYS.AUDIT_LOGS, logs);
+  }
+
+  // --- SAHYADRI ONE: JOBS & CAREER OPPORTUNITIES ---
+  public getJobs(): JobOpportunity[] {
+    return this.getItems<JobOpportunity>(STORAGE_KEYS.JOBS, VERIFIED_JOB_OPPORTUNITIES);
+  }
+
+  public saveJob(job: JobOpportunity): void {
+    const currentUser = this.getCurrentUser();
+    if (currentUser?.role !== 'admin') {
+      throw new Error('Forbidden: Only administrators can publish or update job opportunities.');
+    }
+    const jobs = this.getJobs();
+    const index = jobs.findIndex(j => j.id === job.id);
+    if (index >= 0) {
+      jobs[index] = { ...job, updated_at: new Date().toISOString() };
+    } else {
+      jobs.unshift({ ...job, created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
+    }
+    this.setItems(STORAGE_KEYS.JOBS, jobs);
+  }
+
+  public deleteJob(jobId: string): void {
+    const currentUser = this.getCurrentUser();
+    if (currentUser?.role !== 'admin') {
+      throw new Error('Forbidden: Only administrators can remove job listings.');
+    }
+    const jobs = this.getJobs().filter(j => j.id !== jobId);
+    this.setItems(STORAGE_KEYS.JOBS, jobs);
+  }
+
+  // --- SAHYADRI ONE: STUDY MATERIALS REPOSITORY ---
+  public getStudyMaterials(): StudyMaterial[] {
+    return this.getItems<StudyMaterial>(STORAGE_KEYS.STUDY_MATERIALS, VERIFIED_STUDY_MATERIALS);
+  }
+
+  public saveStudyMaterial(material: StudyMaterial): void {
+    const currentUser = this.getCurrentUser();
+    if (currentUser?.role !== 'admin') {
+      throw new Error('Forbidden: Only administrators can add or edit study materials.');
+    }
+    const materials = this.getStudyMaterials();
+    const index = materials.findIndex(m => m.id === material.id);
+    if (index >= 0) {
+      materials[index] = material;
+    } else {
+      materials.unshift(material);
+    }
+    this.setItems(STORAGE_KEYS.STUDY_MATERIALS, materials);
+  }
+
+  public deleteStudyMaterial(id: string): void {
+    const currentUser = this.getCurrentUser();
+    if (currentUser?.role !== 'admin') {
+      throw new Error('Forbidden: Only administrators can delete study materials.');
+    }
+    const materials = this.getStudyMaterials().filter(m => m.id !== id);
+    this.setItems(STORAGE_KEYS.STUDY_MATERIALS, materials);
+  }
+
+  // --- SAHYADRI ONE: GUIDED CODING LAB ---
+  public getCodingProblems(): CodingProblem[] {
+    return this.getItems<CodingProblem>(STORAGE_KEYS.CODING_PROBLEMS, CODING_LAB_PROBLEMS);
+  }
+
+  public getCodingProblemBySlug(slug: string): CodingProblem | undefined {
+    return this.getCodingProblems().find(p => p.slug === slug || p.id === slug);
+  }
+
+  public getCodingSubmissions(studentId?: string): CodingSubmission[] {
+    const submissions = this.getItems<CodingSubmission>(STORAGE_KEYS.CODING_SUBMISSIONS, []);
+    if (!studentId) return submissions;
+    return submissions.filter(s => s.student_id === studentId);
+  }
+
+  public saveCodingSubmission(sub: CodingSubmission): void {
+    const submissions = this.getItems<CodingSubmission>(STORAGE_KEYS.CODING_SUBMISSIONS, []);
+    submissions.unshift(sub);
+    this.setItems(STORAGE_KEYS.CODING_SUBMISSIONS, submissions);
+  }
+
+  // --- SAHYADRI ONE: WORLD & TECH NEWSPAPER ---
+  public getWorldNews(): WorldNewsArticle[] {
+    return this.getItems<WorldNewsArticle>(STORAGE_KEYS.WORLD_NEWS, WORLD_TECH_NEWS);
+  }
+
+  // --- SAHYADRI ONE: INTERVIEW EXPERIENCES ---
+  public getInterviewExperiences(): InterviewExperience[] {
+    const currentUser = this.getCurrentUser();
+    const experiences = this.getItems<InterviewExperience>(STORAGE_KEYS.INTERVIEW_EXPERIENCES, VERIFIED_INTERVIEW_EXPERIENCES);
+    if (currentUser?.role === 'admin') return experiences;
+    return experiences.filter(e => e.is_approved);
+  }
+
+  public submitInterviewExperience(exp: InterviewExperience): void {
+    const experiences = this.getItems<InterviewExperience>(STORAGE_KEYS.INTERVIEW_EXPERIENCES, VERIFIED_INTERVIEW_EXPERIENCES);
+    experiences.unshift(exp);
+    this.setItems(STORAGE_KEYS.INTERVIEW_EXPERIENCES, experiences);
+  }
+
+  // --- SAHYADRI ONE: STUDENT ACHIEVEMENTS ---
+  public getAchievements(): StudentAchievement[] {
+    const currentUser = this.getCurrentUser();
+    const achievements = this.getItems<StudentAchievement>(STORAGE_KEYS.STUDENT_ACHIEVEMENTS, VERIFIED_STUDENT_ACHIEVEMENTS);
+    if (currentUser?.role === 'admin') return achievements;
+    return achievements.filter(a => a.status === 'approved' || a.student_id === currentUser?.id);
+  }
+
+  public submitAchievement(ach: StudentAchievement): void {
+    const achievements = this.getItems<StudentAchievement>(STORAGE_KEYS.STUDENT_ACHIEVEMENTS, VERIFIED_STUDENT_ACHIEVEMENTS);
+    achievements.unshift(ach);
+    this.setItems(STORAGE_KEYS.STUDENT_ACHIEVEMENTS, achievements);
+  }
+
+  public updateAchievementStatus(id: string, status: 'approved' | 'rejected', remarks?: string): void {
+    const currentUser = this.getCurrentUser();
+    if (currentUser?.role !== 'admin') {
+      throw new Error('Forbidden: Only administrators can review student achievements.');
+    }
+    const achievements = this.getItems<StudentAchievement>(STORAGE_KEYS.STUDENT_ACHIEVEMENTS, VERIFIED_STUDENT_ACHIEVEMENTS);
+    const index = achievements.findIndex(a => a.id === id);
+    if (index >= 0) {
+      achievements[index].status = status;
+      if (remarks) achievements[index].faculty_remarks = remarks;
+      this.setItems(STORAGE_KEYS.STUDENT_ACHIEVEMENTS, achievements);
+    }
+  }
+
+  // --- PDF-TO-MCQ / CUSTOM EXAM GENERATOR INGESTION ---
+  public addGeneratedExam(exam: Exam, questions: Question[], keys: QuestionKey[]): void {
+    const exams = this.getItems<Exam>(STORAGE_KEYS.EXAMS, INITIAL_EXAMS);
+    exams.unshift(exam);
+    this.setItems(STORAGE_KEYS.EXAMS, exams);
+
+    const allQuestions = this.getItems<Question>(STORAGE_KEYS.QUESTIONS, INITIAL_QUESTIONS);
+    this.setItems(STORAGE_KEYS.QUESTIONS, [...questions, ...allQuestions]);
+
+    const allKeys = this.getItems<QuestionKey>(STORAGE_KEYS.QUESTION_KEYS, INITIAL_QUESTION_KEYS);
+    this.setItems(STORAGE_KEYS.QUESTION_KEYS, [...keys, ...allKeys]);
   }
 }
 

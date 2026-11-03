@@ -6,9 +6,13 @@ import {
   Newspaper, 
   Bot, 
   ShieldCheck, 
-  X,
-  LogOut,
-  Building2 
+  X, 
+  LogOut, 
+  Briefcase,
+  BookOpen,
+  Code2,
+  Globe2,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 
@@ -25,9 +29,14 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose, onProfile
 
   const navLinks = [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: false },
-    { to: '/exams', label: 'Examinations (MCQ)', icon: GraduationCap, adminOnly: false },
-    { to: '/newsletter', label: 'SCEM Newsletter (10-Day Feed)', icon: Newspaper, adminOnly: false },
-    { to: '/assistant', label: 'Ask SCEM AI Assistant', icon: Bot, adminOnly: false },
+    { to: '/exams', label: 'Aptitude Exams (20+)', icon: GraduationCap, adminOnly: false },
+    { to: '/coding', label: 'Coding Practice Lab', icon: Code2, adminOnly: false },
+    { to: '/study', label: 'Study Materials & Sheets', icon: BookOpen, adminOnly: false },
+    { to: '/jobs', label: 'Verified Jobs & Drives', icon: Briefcase, adminOnly: false },
+    { to: '/news', label: 'World & Tech News Wire', icon: Globe2, adminOnly: false },
+    { to: '/interviews', label: 'Senior Debriefs & Honors', icon: MessageSquare, adminOnly: false },
+    { to: '/newsletter', label: 'Campus Newsletter', icon: Newspaper, adminOnly: false },
+    { to: '/assistant', label: 'Ask Sahyadri AI', icon: Bot, adminOnly: false },
     { to: '/admin', label: 'Administrator Studio', icon: ShieldCheck, adminOnly: true },
   ];
 
@@ -37,11 +46,11 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose, onProfile
         <div className="p-4 border-b border-campus-navy-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-campus-teal-600 flex items-center justify-center font-bold text-white text-sm">
-              CP
+              S1
             </div>
             <div>
-              <h2 className="font-bold text-sm">CampusPilot AI</h2>
-              <p className="text-[10px] text-campus-teal-400">SCEM Mangaluru</p>
+              <h2 className="font-bold text-sm">Sahyadri ONE</h2>
+              <p className="text-[10px] text-campus-teal-400">Placement & Campus Portal</p>
             </div>
           </div>
           <button
@@ -64,8 +73,8 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose, onProfile
                   to={link.to}
                   onClick={onClose}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                      isActive ? 'bg-campus-teal-600 text-white font-semibold' : 'text-slate-300 hover:bg-campus-navy-850'
+                    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-colors ${
+                      isActive ? 'bg-campus-teal-600 text-white font-semibold' : 'text-slate-300 hover:bg-campus-navy-900'
                     }`
                   }
                 >
@@ -90,7 +99,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose, onProfile
               </div>
               <div>
                 <p className="text-xs font-bold text-white truncate max-w-[130px]">{user?.full_name}</p>
-                <p className="text-[10px] text-slate-400 uppercase">{user?.role}</p>
+                <p className="text-[10px] text-slate-400 uppercase font-mono">{user?.usn || user?.role}</p>
               </div>
             </button>
             <button
@@ -106,4 +115,3 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose, onProfile
     </div>
   );
 };
-
