@@ -82,14 +82,15 @@ Every feature has been audited against actual codebase files, database migration
 
 ### Automated Unit & Integration Tests (Vitest)
 ```text
- ✓ src/test/googleAuthDatabase.test.ts (11 tests) 143ms
- ✓ src/test/permissions.test.ts (5 tests) 85ms
- ✓ src/test/aiAssistant.test.ts (6 tests) 166ms
- ✓ src/test/newsletterDate.test.ts (7 tests) 517ms
- ✓ src/test/examsScoring.test.ts (7 tests) 130ms
+ ✓ src/test/codingExecution.test.ts (5 tests)
+ ✓ src/test/newsletterDate.test.ts (7 tests)
+ ✓ src/test/permissions.test.ts (5 tests)
+ ✓ src/test/aiAssistant.test.ts (9 tests)
+ ✓ src/test/googleAuthDatabase.test.ts (11 tests)
+ ✓ src/test/examsScoring.test.ts (9 tests)
 
-Test Files:  5 passed (5)
-Tests:       36 passed (36)
+Test Files:  6 passed (6)
+Tests:       46 passed (46)
 Pass Rate:   100%
 ```
 
@@ -98,6 +99,42 @@ Pass Rate:   100%
 > tsc && vite build
 
 vite v5.4.21 building for production...
+transforming...
+✓ 1679 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   1.14 kB │ gzip:   0.65 kB
+dist/assets/index-Dy3OOY_u.css   46.56 kB │ gzip:   7.97 kB
+dist/assets/index-B8EUlT4X.js   787.04 kB │ gzip: 208.48 kB
+✓ built in 55.84s
+```
+
+---
+
+## 6. Defect Resolutions & Enhancements (November 2026 Release)
+
+1. **MCQ Exam Review & Answer Key Exposure:**
+   - Resolved student access denial on exam review screens by implementing `getAttemptReviewKeys(attemptId)` in `src/lib/storage.ts`.
+   - Authorized post-submission access: students can inspect question keys, correct choices, and explanations strictly for their own submitted attempts.
+   - Upgraded `ExamResultView.tsx` with side-by-side answer comparisons, explicit status badges (`CORRECT`, `INCORRECT`, `UNANSWERED`), marks breakdown (e.g., `3/3`), color-coded option pills, and detailed explanations.
+   - Added unit test coverage in `src/test/examsScoring.test.ts` for Direction Sense question (`q-dir-1`, 3/3 marks) and unanswered question verification.
+
+2. **Sandboxed Coding Execution Engine & Guided Debugging:**
+   - Eliminated the artificial `idx !== 2` failure defect in `CodingLabPage.tsx`.
+   - Developed `src/features/coding/executionEngine.ts` to execute student code in a safe browser sandbox across Two Sum, Valid Parentheses, and Reverse Linked List.
+   - Implemented syntax error (`compilation_error`), runtime error, and wrong answer diagnostics.
+   - Added a 5-tier guided debugging ladder (Observation, Diagnostic, Concept, Guided Fix, Solution Reveal) that unlocks progressively when tests fail, and cleanly displays a success card when all tests pass.
+   - Verified via 5 automated tests in `src/test/codingExecution.test.ts`.
+
+3. **Ask Sahyadri AI Chatbot Conversational Upgrade:**
+   - Implemented `handleConversationalIntent()` in `src/features/assistant/aiProvider.ts` to naturally handle greetings ("Hello", "Hi", "Good morning"), identity queries, and placement preparation roadmaps.
+   - Integrated institutional privacy protection: queries regarding private student marks, faculty mobile numbers, or daily timetables are safely redirected to the official SCEM ERP portal (`erp.sahyadri.edu.in`).
+   - Grounded placement policy answers with official citations (`SCEM Placement Handbook 2025-26`).
+
+4. **Student Dashboard Data Classification:**
+   - Updated `StudentDashboard.tsx` to handle zero-attempt states gracefully with `"Not enough data yet — Take an assessment to activate"` instead of misleading 0% values.
+   - Exposed transparent weighted calculation formula: `(Aptitude Accuracy * 0.4) + (Test Consistency * 0.3) + (Coding * 0.3)`.
+   - Added visual badges distinguishing verified institutional data from local sandbox records.
 ✓ 1678 modules transformed.
 dist/index.html                   1.14 kB │ gzip:   0.65 kB
 dist/assets/index-DY5gWibt.css   44.52 kB │ gzip:   7.73 kB

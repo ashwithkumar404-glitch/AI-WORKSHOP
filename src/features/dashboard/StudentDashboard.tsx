@@ -141,9 +141,22 @@ export const StudentDashboard: React.FC = () => {
             <Target className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs font-bold text-campus-teal-900 uppercase tracking-wider">Placement Readiness</p>
-            <p className="text-2xl font-black text-slate-900 mt-0.5">{provisionalReadinessScore}%</p>
-            <p className="text-[10px] text-slate-500 mt-0.5 font-medium">Provisional activity formula</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-xs font-bold text-campus-teal-900 uppercase tracking-wider">Placement Readiness</p>
+            </div>
+            {completedAttempts.length === 0 && codingSubs.length === 0 ? (
+              <>
+                <p className="text-sm font-bold text-slate-700 mt-1">Not enough data yet</p>
+                <p className="text-[10px] text-slate-500 mt-0.5">Take an assessment to activate</p>
+              </>
+            ) : (
+              <>
+                <p className="text-2xl font-black text-slate-900 mt-0.5">{provisionalReadinessScore}%</p>
+                <p className="text-[10px] text-slate-500 mt-0.5 font-medium" title="Formula: 40% Aptitude Accuracy + 30% Exam Consistency + 30% Coding Challenges">
+                  Activity-weighted formula
+                </p>
+              </>
+            )}
           </div>
         </Card>
 
@@ -154,7 +167,9 @@ export const StudentDashboard: React.FC = () => {
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Aptitude Exams</p>
             <p className="text-2xl font-black text-slate-900 mt-0.5">{exams.length}</p>
-            <p className="text-[11px] text-slate-500 mt-0.5">{completedAttempts.length} completed</p>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              {completedAttempts.length > 0 ? `${completedAttempts.length} completed` : '0 completed attempts'}
+            </p>
           </div>
         </Card>
 

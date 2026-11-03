@@ -255,6 +255,42 @@ class LocalRepository {
     return keys.find(k => k.question_id === questionId);
   }
 
+  /**
+   * Retrieves verified review keys (correct option ID and explanations) for a specific attempt.
+   * Authorized ONLY if the attempt is 'submitted' and owned by the calling student or an admin.
+   */
+  public getAttemptReviewKeys(attemptId: string): Record<string, { correct_option_id: string; explanation?: string }> {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) {
+      throw new Error('Authentication required to inspect attempt review.');
+    }
+    const attempt = this.getAttemptById(attemptId);
+    if (!attempt) {
+      throw new Error('Attempt not found.');
+    }
+    if (attempt.student_id !== currentUser.id && currentUser.role !== 'admin') {
+      throw new Error('Access Denied: Cannot inspect another student\'s attempt review.');
+    }
+    if (attempt.status !== 'submitted') {
+      throw new Error('Access Denied: Answer keys are unavailable while an examination is in progress.');
+    }
+
+    const allKeys = this.getItems<QuestionKey>(STORAGE_KEYS.QUESTION_KEYS);
+    const questions = this.getQuestionsForExam(attempt.exam_id);
+    const qIdSet = new Set(questions.map(q => q.id));
+
+    const result: Record<string, { correct_option_id: string; explanation?: string }> = {};
+    for (const k of allKeys) {
+      if (qIdSet.has(k.question_id)) {
+        result[k.question_id] = {
+          correct_option_id: k.correct_option_id,
+          explanation: k.explanation
+        };
+      }
+    }
+    return result;
+  }
+
   // Attempts: RLS ensures students only view their own
   public getAttempts(): ExamAttempt[] {
     const currentUser = this.getCurrentUser();

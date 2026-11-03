@@ -64,5 +64,35 @@ describe('Ask SCEM AI Grounded Assistant & Anti-Hallucination Guard', () => {
     expect(answer.content).toContain('Team Challengers');
     expect(answer.citations.some(c => c.title.includes('Innovation Cells'))).toBe(true);
   });
+
+  it('handles conversational greetings naturally without throwing a missing knowledge error', async () => {
+    const helloAnswer = await askScemAssistant('Hello');
+    expect(helloAnswer.content).toContain('Welcome to **SAHYADRI ONE**');
+    expect(helloAnswer.content).not.toContain('could not find verified information');
+
+    const gmAnswer = await askScemAssistant('Good morning');
+    expect(gmAnswer.content).toContain('Welcome to **SAHYADRI ONE**');
+
+    const whoAnswer = await askScemAssistant('Who are you?');
+    expect(whoAnswer.content).toContain('Ask Sahyadri AI');
+
+    const thanksAnswer = await askScemAssistant('Thank you');
+    expect(thanksAnswer.content).toContain('You\'re very welcome');
+  });
+
+  it('provides structured placement preparation guidance distinguishing official rules from general advice', async () => {
+    const answer = await askScemAssistant('How can I prepare for placements?');
+    expect(answer.content).toContain('Official SCEM Placement Cell Requirements');
+    expect(answer.content).toContain('7.0 CGPA');
+    expect(answer.content).toContain('90% attendance in institutional training bootcamps');
+    expect(answer.citations.length).toBeGreaterThan(0);
+    expect(answer.citations[0].title).toContain('Placement');
+  });
+
+  it('protects private real-time student records from unauthorized conversational disclosure', async () => {
+    const answer = await askScemAssistant('What is my attendance percentage today?');
+    expect(answer.content).toContain('Privacy & Data Policy Notice');
+    expect(answer.content).toContain('erp.sahyadri.edu.in');
+  });
 });
 

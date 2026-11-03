@@ -12,7 +12,11 @@ import {
   RotateCcw, 
   ArrowLeft,
   BookOpen,
-  ShieldCheck 
+  ShieldCheck,
+  AlertCircle,
+  HelpCircle,
+  Sparkles,
+  Layers
 } from 'lucide-react';
 import { formatInIST } from '@/features/newsletter/dateUtils';
 
@@ -32,6 +36,14 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
   const questions = exam ? dbRepository.getQuestionsForExam(exam.id) : [];
   const responses = dbRepository.getResponsesForAttempt(attemptId);
 
+  // Retrieve authorized answer keys for this completed attempt
+  let reviewKeys: Record<string, { correct_option_id: string; explanation?: string }> = {};
+  try {
+    reviewKeys = dbRepository.getAttemptReviewKeys(attemptId);
+  } catch (e) {
+    console.warn('Could not load review keys:', e);
+  }
+
   if (!attempt || !exam) {
     return (
       <div className="p-8 text-center bg-white rounded-2xl border border-slate-200">
@@ -48,18 +60,37 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
     responseMap.set(r.question_id, r);
   }
 
+  // Calculate detailed accuracy metrics
+  let correctCount = 0;
+  let incorrectCount = 0;
+  let unansweredCount = 0;
+
   // Topic-level performance calculation based on actual question metadata and server-verified marks
   const topicStats: Record<string, { total: number; correct: number; marksObtained: number; marksTotal: number }> = {};
+  
   for (const q of questions) {
     if (!topicStats[q.topic]) {
       topicStats[q.topic] = { total: 0, correct: 0, marksObtained: 0, marksTotal: 0 };
     }
     const resp = responseMap.get(q.id);
+    const keyInfo = reviewKeys[q.id];
+    const correctOptId = keyInfo?.correct_option_id;
+    const selectedOptId = resp?.selected_option_id;
+
+    const isAnswered = Boolean(selectedOptId && selectedOptId.trim() !== '');
+    const isCorrect = Boolean(isAnswered && correctOptId && selectedOptId === correctOptId);
+
     topicStats[q.topic].total += 1;
     topicStats[q.topic].marksTotal += q.marks;
-    if (resp?.is_correct) {
+
+    if (!isAnswered) {
+      unansweredCount += 1;
+    } else if (isCorrect) {
+      correctCount += 1;
       topicStats[q.topic].correct += 1;
-      topicStats[q.topic].marksObtained += resp.marks_awarded;
+      topicStats[q.topic].marksObtained += q.marks;
+    } else {
+      incorrectCount += 1;
     }
   }
 
@@ -130,20 +161,20 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
             </span>
           </div>
           <div>
-            <span className="text-slate-400 block">Total Questions</span>
-            <span className="font-semibold text-white mt-0.5 block">{questions.length} Questions</span>
+            <span className="text-slate-400 block">Accuracy Breakdown</span>
+            <span className="font-semibold text-white mt-0.5 block">
+              <span className="text-emerald-400 font-bold">{correctCount} Correct</span> • <span className="text-rose-400 font-bold">{incorrectCount} Incorrect</span>
+            </span>
           </div>
           <div>
-            <span className="text-slate-400 block">Retake Policy</span>
-            <span className="font-semibold text-white mt-0.5 block capitalize">
-              {exam.retake_policy.replace('_', ' ')}
-            </span>
+            <span className="text-slate-400 block">Unanswered</span>
+            <span className="font-semibold text-white mt-0.5 block">{unansweredCount} Questions Skipped</span>
           </div>
           <div>
             <span className="text-slate-400 block">Scoring Engine</span>
             <span className="font-semibold text-campus-teal-300 mt-0.5 block flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5" />
-              Verified Server Logic
+              Verified Server Keys
             </span>
           </div>
         </div>
@@ -185,78 +216,200 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
         </div>
       </Card>
 
-      {/* Question Review (Detailed Responses) */}
+      {/* Question Review (Detailed Responses with Clear Right/Wrong Status) */}
       <Card>
-        <h3 className="text-sm font-bold text-slate-900 mb-1 flex items-center gap-2">
-          <BookOpen className="w-4 h-4 text-campus-teal-600" />
-          Attempt Inspection
-        </h3>
-        <p className="text-xs text-slate-500 mb-4">
-          Review your submitted options alongside verified scoring feedback.
-        </p>
+        <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+          <div>
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-campus-teal-600" />
+              Detailed Attempt Inspection & Question Review
+            </h3>
+            <p className="text-xs text-slate-500">
+              Inspect your submitted answer alongside the verified correct answer, mark attribution, and official explanation.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">
+              {correctCount} Correct
+            </span>
+            <span className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-800 border border-rose-200 font-bold">
+              {incorrectCount} Incorrect
+            </span>
+            {unansweredCount > 0 && (
+              <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200 font-medium">
+                {unansweredCount} Unanswered
+              </span>
+            )}
+          </div>
+        </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           {questions.map((q, idx) => {
             const resp = responseMap.get(q.id);
-            const isCorrect = resp?.is_correct;
+            const keyInfo = reviewKeys[q.id];
+            const correctOptId = keyInfo?.correct_option_id;
+            const explanation = keyInfo?.explanation;
+
             const selected = resp?.selected_option_id;
+            const isAnswered = Boolean(selected && selected.trim() !== '');
+            const isCorrect = Boolean(isAnswered && correctOptId && selected === correctOptId);
+            const marksAwarded = isCorrect ? q.marks : 0;
+
+            const selectedOption = q.options.find(o => o.id === selected);
+            const correctOption = q.options.find(o => o.id === correctOptId);
 
             return (
               <div
                 key={q.id}
-                className={`p-4 rounded-xl border transition-all ${
+                className={`p-5 rounded-2xl border transition-all ${
                   isCorrect
                     ? 'border-emerald-200 bg-emerald-50/20'
-                    : selected
+                    : isAnswered
                     ? 'border-rose-200 bg-rose-50/20'
-                    : 'border-slate-200 bg-slate-50/30'
+                    : 'border-amber-200 bg-amber-50/20'
                 }`}
               >
-                <div className="flex items-center justify-between gap-2 mb-2">
+                {/* Question Header & Status Badge */}
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-xs text-slate-700">Q{idx + 1}.</span>
+                    <span className="font-bold text-xs text-slate-700 bg-white px-2 py-1 rounded-md border border-slate-200">
+                      Question {idx + 1}
+                    </span>
                     <Badge variant="neutral" size="sm">{q.topic}</Badge>
                   </div>
-                  <Badge variant={isCorrect ? 'success' : selected ? 'danger' : 'neutral'} size="sm">
-                    {isCorrect ? `+${resp?.marks_awarded || q.marks} Marks` : `0 / ${q.marks} Marks`}
-                  </Badge>
+
+                  <div className="flex items-center gap-2">
+                    {/* Explicit Status Badge */}
+                    {isCorrect ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        CORRECT
+                      </span>
+                    ) : isAnswered ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-100 text-rose-800 border border-rose-300">
+                        <XCircle className="w-3.5 h-3.5 text-rose-600" />
+                        INCORRECT
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-100 text-amber-800 border border-amber-300">
+                        <HelpCircle className="w-3.5 h-3.5 text-amber-600" />
+                        UNANSWERED
+                      </span>
+                    )}
+
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-md border ${
+                      isCorrect ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-slate-50 text-slate-700 border-slate-200'
+                    }`}>
+                      Score: {marksAwarded} / {q.marks}
+                    </span>
+                  </div>
                 </div>
 
-                <p className="text-xs sm:text-sm font-semibold text-slate-800 mb-3">
+                {/* Question Text */}
+                <p className="text-sm font-semibold text-slate-900 mb-4 leading-relaxed">
                   {q.question_text}
                 </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                {/* Clear Answer Comparison Callout */}
+                <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                  <div className={`p-3 rounded-xl border ${
+                    !isAnswered
+                      ? 'bg-amber-50/80 border-amber-200 text-amber-900'
+                      : isCorrect
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                      : 'bg-rose-50 border-rose-200 text-rose-900'
+                  }`}>
+                    <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">
+                      Your Submitted Answer
+                    </span>
+                    <span className="font-bold text-xs">
+                      {isAnswered && selectedOption ? (
+                        <>
+                          <span className="underline mr-1">{selectedOption.id}.</span> {selectedOption.text}
+                        </>
+                      ) : (
+                        <span className="italic text-slate-500">Not Attempted (Skipped)</span>
+                      )}
+                    </span>
+                  </div>
+
+                  <div className="p-3 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-900">
+                    <span className="block text-[10px] font-bold uppercase tracking-wider text-emerald-700 mb-0.5">
+                      Verified Correct Answer
+                    </span>
+                    <span className="font-bold text-xs">
+                      {correctOption ? (
+                        <>
+                          <span className="underline mr-1">{correctOption.id}.</span> {correctOption.text}
+                        </>
+                      ) : (
+                        <span>Option {correctOptId || '—'}</span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Options List with Highlighted Correct and Chosen States */}
+                <div className="space-y-2 text-xs">
                   {q.options.map((opt) => {
                     const isSelected = selected === opt.id;
+                    const isThisCorrect = correctOptId === opt.id;
+
+                    let optionStyle = 'border-slate-200 bg-white text-slate-700';
+                    let badgeStyle = 'bg-slate-100 text-slate-700';
+
+                    if (isThisCorrect) {
+                      optionStyle = 'border-emerald-500 bg-emerald-50/80 text-emerald-950 font-semibold shadow-xs';
+                      badgeStyle = 'bg-emerald-600 text-white';
+                    } else if (isSelected && !isCorrect) {
+                      optionStyle = 'border-rose-400 bg-rose-50/80 text-rose-950 font-semibold';
+                      badgeStyle = 'bg-rose-600 text-white';
+                    }
+
                     return (
                       <div
                         key={opt.id}
-                        className={`p-2.5 rounded-lg border flex items-center gap-2 ${
-                          isSelected
-                            ? isCorrect
-                              ? 'border-emerald-400 bg-emerald-50 text-emerald-900 font-bold'
-                              : 'border-rose-400 bg-rose-50 text-rose-900 font-bold'
-                            : 'border-slate-200 bg-white text-slate-600'
-                        }`}
+                        className={`p-3 rounded-xl border flex items-center justify-between gap-3 transition-colors ${optionStyle}`}
                       >
-                        <span className={`w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center shrink-0 ${
-                          isSelected
-                            ? isCorrect ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'
-                            : 'bg-slate-100 text-slate-700'
-                        }`}>
-                          {opt.id}
-                        </span>
-                        <span>{opt.text}</span>
-                        {isSelected && (
-                          <span className="ml-auto text-[10px] uppercase font-bold tracking-wider">
-                            Your Choice
+                        <div className="flex items-center gap-2.5">
+                          <span className={`w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${badgeStyle}`}>
+                            {opt.id}
                           </span>
-                        )}
+                          <span className="text-xs leading-snug">{opt.text}</span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {isSelected && (
+                            <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
+                              isCorrect ? 'bg-emerald-200 text-emerald-900' : 'bg-rose-200 text-rose-900'
+                            }`}>
+                              Your Choice
+                            </span>
+                          )}
+                          {isThisCorrect && (
+                            <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-600 text-white flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" />
+                              Correct Answer
+                            </span>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
                 </div>
+
+                {/* Step-by-Step Concise Explanation Box */}
+                {explanation && (
+                  <div className="mt-4 p-3.5 rounded-xl bg-white border border-slate-200 text-xs space-y-1">
+                    <div className="flex items-center gap-1.5 font-bold text-campus-teal-800">
+                      <Sparkles className="w-3.5 h-3.5 text-campus-teal-600" />
+                      <span>Verified Solution & Explanation</span>
+                    </div>
+                    <p className="text-slate-700 leading-relaxed pl-5">
+                      {explanation}
+                    </p>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -280,4 +433,3 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
     </div>
   );
 };
-

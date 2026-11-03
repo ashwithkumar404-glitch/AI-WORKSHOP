@@ -279,3 +279,4 @@ export const CertificateApprovalStudio: React.FC = () => {
     </div>
   );
 };
+

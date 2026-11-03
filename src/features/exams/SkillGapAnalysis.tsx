@@ -316,3 +316,4 @@ export const SkillGapAnalysis: React.FC<SkillGapAnalysisProps> = ({ attempts }) 
     </div>
   );
 };
+

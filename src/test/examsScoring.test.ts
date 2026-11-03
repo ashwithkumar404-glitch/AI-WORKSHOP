@@ -120,5 +120,60 @@ describe('Examination Engine & Server-Side Scoring Security', () => {
       dbRepository.createAttempt('exam-daa-401');
     }).toThrow(/Retake Policy Restriction/);
   });
+
+  it('correctly validates the Direction Sense question (Rahul walks 12 km North -> 5 km East)', async () => {
+    dbRepository.setCurrentUser(INITIAL_STUDENT_USER);
+    const examId = 'exam-logic-205'; // Logical Reasoning Assessment 5 (Direction Sense)
+    const attempt = dbRepository.createAttempt(examId);
+
+    // Question q-dir-1: Rahul walks 12 km North, turns right and walks 5 km. Then turns right and walks 12 km.
+    // Correct option is 'A' (5 km East)
+    const questions = dbRepository.getQuestionsForExam(examId);
+    const dirQuestion = questions.find(q => q.id === 'q-dir-1');
+    expect(dirQuestion).toBeDefined();
+    expect(dirQuestion?.question_text).toContain('12 km North');
+
+    // Student selects option 'A' (5 km East)
+    dbRepository.saveResponse(attempt.id, 'q-dir-1', 'A');
+
+    const result = await submitExamAttemptTrusted(attempt.id);
+    expect(result.status).toBe('success');
+    expect(result.score).toBeGreaterThanOrEqual(3);
+
+    // Retrieve authorized review keys post-submission
+    const reviewKeys = dbRepository.getAttemptReviewKeys(attempt.id);
+    expect(reviewKeys['q-dir-1']).toBeDefined();
+    expect(reviewKeys['q-dir-1'].correct_option_id).toBe('A');
+    expect(reviewKeys['q-dir-1'].explanation).toContain('5 km directly East');
+
+    // Verify stored response has is_correct = true and marks_awarded = 3
+    const responses = dbRepository.getResponsesForAttempt(attempt.id);
+    const dirResponse = responses.find(r => r.question_id === 'q-dir-1');
+    expect(dirResponse?.is_correct).toBe(true);
+    expect(dirResponse?.marks_awarded).toBe(3);
+  });
+
+  it('scores incorrect and unanswered questions as 0 marks with verified explanations on review', async () => {
+    dbRepository.setCurrentUser(INITIAL_STUDENT_USER);
+    const examId = 'exam-logic-205';
+    const attempt = dbRepository.createAttempt(examId);
+
+    // Student selects WRONG option 'C' (13 km North-East) for q-dir-1
+    dbRepository.saveResponse(attempt.id, 'q-dir-1', 'C');
+    // Leaves other questions unanswered
+
+    const result = await submitExamAttemptTrusted(attempt.id);
+    expect(result.status).toBe('success');
+
+    const responses = dbRepository.getResponsesForAttempt(attempt.id);
+    const dirResponse = responses.find(r => r.question_id === 'q-dir-1');
+    expect(dirResponse?.is_correct).toBe(false);
+    expect(dirResponse?.marks_awarded).toBe(0);
+
+    // Post-submission review is available to the owner
+    const reviewKeys = dbRepository.getAttemptReviewKeys(attempt.id);
+    expect(reviewKeys['q-dir-1'].correct_option_id).toBe('A');
+    expect(reviewKeys['q-dir-1'].explanation).toBeDefined();
+  });
 });
 

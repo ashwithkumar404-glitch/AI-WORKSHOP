@@ -6,13 +6,13 @@ import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
 import { PerformanceCharts } from './PerformanceCharts';
 import { SkillGapAnalysis } from './SkillGapAnalysis';
-import { 
-  Award, 
-  Clock, 
-  CheckCircle2, 
-  XCircle, 
-  Calendar, 
-  ChevronRight, 
+import {
+  Award,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Calendar,
+  ChevronRight,
   BarChart3,
   Search
 } from 'lucide-react';
