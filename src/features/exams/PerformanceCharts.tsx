@@ -122,3 +122,4 @@ export const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ attempts }
     </div>
   );
 };
+

@@ -76,3 +76,4 @@ export const NewsletterCard: React.FC<NewsletterCardProps> = ({ newsletter, onSe
     </Card>
   );
 };
+

@@ -575,3 +575,4 @@ as $$
   order by rank desc, kd.updated_at desc
   limit max_results;
 $$;
+

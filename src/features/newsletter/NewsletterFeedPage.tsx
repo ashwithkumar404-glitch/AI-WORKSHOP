@@ -212,3 +212,4 @@ export const NewsletterFeedPage: React.FC = () => {
     </div>
   );
 };
+

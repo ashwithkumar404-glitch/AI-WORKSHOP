@@ -67,3 +67,4 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileNav, onProfileClic
     </header>
   );
 };
+

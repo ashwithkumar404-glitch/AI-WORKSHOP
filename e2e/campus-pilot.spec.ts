@@ -98,3 +98,4 @@ test.describe('CampusPilot AI — SCEM Academic Portal E2E Tests', () => {
     await expect(page.locator('text=requires ADMIN privileges')).toBeVisible();
   });
 });
+

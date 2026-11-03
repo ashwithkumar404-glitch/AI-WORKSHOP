@@ -104,3 +104,4 @@ export const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = ({
     </Modal>
   );
 };
+

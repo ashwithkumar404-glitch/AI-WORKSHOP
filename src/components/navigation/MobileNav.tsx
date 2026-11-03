@@ -106,3 +106,4 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose, onProfile
     </div>
   );
 };
+

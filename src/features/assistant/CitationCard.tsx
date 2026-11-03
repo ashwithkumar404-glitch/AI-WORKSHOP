@@ -37,3 +37,4 @@ export const CitationCard: React.FC<CitationCardProps> = ({ citation }) => {
     </div>
   );
 };
+

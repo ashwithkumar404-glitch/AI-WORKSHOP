@@ -252,3 +252,4 @@ export const KnowledgeBaseManager: React.FC = () => {
     </div>
   );
 };
+

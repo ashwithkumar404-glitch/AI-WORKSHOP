@@ -32,3 +32,4 @@ export const getSupabaseConfigStatus = () => {
     mode: configured ? 'Live Supabase Cloud' : 'Local Verified Demonstration Mode',
   };
 };
+

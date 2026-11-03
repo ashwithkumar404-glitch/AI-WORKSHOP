@@ -215,3 +215,4 @@ export const AskScemChat: React.FC = () => {
     </div>
   );
 };
+

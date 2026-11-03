@@ -28,11 +28,58 @@
 - **Server-Side Scoring**: PostgreSQL `SECURITY DEFINER` function (`submit_exam_attempt`) ensuring answer keys and calculations remain server-side
 - **Knowledge Retrieval**: Full-text keyword & category matching with anti-adversarial prompt injection screening
 - **Testing**: Vitest, React Testing Library, JSDOM, Playwright E2E
-- **Version Control**: Git
+- **Version Control**: Git & GitHub (`main` protected branch workflow)
 
 ---
 
-## 3. Database Architecture & Migrations
+## 3. Team Collaboration & Onboarding Guide (5 Developers)
+
+To coordinate simultaneous feature development among five engineers without merge collisions:
+
+### Team Member Workstream Allocations:
+
+| Developer | Track / Responsibility | Working Branch |
+| :--- | :--- | :--- |
+| **Developer 1** | Academic Overview, Dashboard Cards & Metrics | `feature/dashboard` |
+| **Developer 2** | Online MCQ Runner, Timers & Server-Side Scoring | `feature/exams` |
+| **Developer 3** | Rolling 10-Day Newsletter Feed, Archive & Studio | `feature/newsletters` |
+| **Developer 4** | Ask SCEM AI Grounded Knowledge & Citations | `feature/ai-chat` |
+| **Developer 5** | Administrator Studio, Audit Logs & RLS Roles | `feature/admin-security` |
+
+### Step-by-Step Onboarding for Team Members:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/pvnkulal45-svg/campuspilot-ai.git
+cd campuspilot-ai
+
+# 2. Install dependencies
+npm install
+
+# 3. Create local environment configuration
+cp .env.example .env
+
+# 4. Switch to your designated feature branch
+git checkout -b feature/<your-assigned-feature>
+
+# 5. Start the local dev server
+npm run dev
+
+# 6. Run test suite before committing
+npm test
+npm run build
+```
+
+> [!CAUTION]
+> **NEVER PUSH DIRECTLY TO `main`!**
+> Always push your work to `origin feature/<your-branch>` and submit a GitHub Pull Request for peer review.
+> **DO NOT COMMIT SECRETS:** Ensure `.env` or any production credentials remain excluded by `.gitignore`.
+
+Refer to [`CONTRIBUTING.md`](file:///c:/Users/ashvi/OneDrive/Desktop/AI%20Workshop/CONTRIBUTING.md) for full branch, rebase, and commit conventions.
+
+---
+
+## 4. Database Architecture & Migrations
 
 All database schemas, constraints, foreign keys, RLS policies, and server-side functions are version-controlled in:
 ```
@@ -55,7 +102,7 @@ supabase/migrations/20261103000000_init_schema.sql
 
 ---
 
-## 4. Exam Security & Scoring Model
+## 5. Exam Security & Scoring Model
 
 CampusPilot AI eliminates client-side cheating and score tampering:
 1. **Isolated Answer Keys**: Correct options and explanations reside in `question_keys`, which is inaccessible to students.
@@ -69,7 +116,7 @@ CampusPilot AI eliminates client-side cheating and score tampering:
 
 ---
 
-## 5. Weekly Newsletter Rolling 10-Day Feed
+## 6. Weekly Newsletter Rolling 10-Day Feed
 
 The student newsletter feed displays publications within the **latest 10 calendar days in Asia/Kolkata timezone (IST)**:
 - **Rolling Calculation**: Covers `today` (Day 1) plus the previous 9 calendar days in IST (`[today - 9 days, today]`).
@@ -78,7 +125,7 @@ The student newsletter feed displays publications within the **latest 10 calenda
 
 ---
 
-## 6. Ask SCEM AI — Grounded Assistant & Anti-Hallucination Guard
+## 7. Ask SCEM AI — Grounded Assistant & Anti-Hallucination Guard
 
 The Ask SCEM assistant helps students navigate college rules without inventing policies:
 - **Approved Knowledge Index**: Answers are synthesized from verified SCEM documents covering Attendance (85% VTU rule), Autonomous SGPA/CGPA Grading, Placements (Dream tier guidelines), Hostel Timings, and Technical Clubs (Team Challengers, NAIN, SCAIR).
@@ -91,39 +138,11 @@ The Ask SCEM assistant helps students navigate college rules without inventing p
 
 ---
 
-## 7. Getting Started & Installation
-
-### Prerequisites
-- Node.js `v18+` or `v20+` (tested on Node `v24.16.0`)
-- npm `v9+` or `v11+`
-
-### Installation Commands
-
-```bash
-# 1. Clone repository or open workspace directory
-cd "AI Workshop"
-
-# 2. Install dependencies
-npm install
-
-# 3. Create local environment file (optional; demo mode works out of the box)
-cp .env.example .env
-
-# 4. Start development server
-npm run dev
-```
-
-The application will be live at `http://localhost:5173`.
-
----
-
 ## 8. Demo Personas (Instant Login)
 
 When running in local demo mode, you can log in instantly with one click:
 - **Student Persona**: `Aditi Rao` (`student@sahyadri.edu.in`) — 4th Semester CSE, USN `4SF22CS014`.
 - **Administrator Persona**: `Dr. Rajesh Kamath` (`admin@sahyadri.edu.in`) — Dean Academics & Examinations, Faculty ID `SCEM-FAC-042`.
-
-Use the persona switcher in the top banner or on the login screen to toggle roles and test security barriers.
 
 ---
 
@@ -144,7 +163,6 @@ To connect a live Supabase project:
 5. **Provisioning the First Administrator**:
    In the Supabase SQL Editor, run:
    ```sql
-   -- Upgrade an enrolled user to Administrator
    UPDATE public.profiles
    SET role = 'admin'
    WHERE email = 'your-admin-email@sahyadri.edu.in';
@@ -161,40 +179,12 @@ The automated test suite runs Vitest and verifies authentication, RLS permission
 npm test
 ```
 
-### Actual Executed Test Results:
+### Verified Test Run Results:
 ```text
  ✓ src/test/newsletterDate.test.ts (7 tests)
-   • correctly calculates IST date parts from UTC timestamp
-   • correctly handles day-rollover across UTC and IST
-   • defines rolling 10-calendar-day window as today + previous 9 calendar days
-   • validates articles published within rolling 10 calendar days
-   • identifies older articles that belong in the archive (> 10 calendar days ago)
-   • formats dates in Indian Standard Time format
-   • computes relative calendar descriptions
-
  ✓ src/test/permissions.test.ts (5 tests)
-   • prevents students from changing their role to admin
-   • hides unpublished draft exams from ordinary students
-   • hides unpublished newsletter drafts from students
-   • prohibits non-admin users from creating or saving exams
-   • prohibits non-admin users from publishing newsletters
-
  ✓ src/test/aiAssistant.test.ts (6 tests)
-   • retrieves relevant approved knowledge documents for attendance inquiry
-   • returns grounded answer with exact citations when verified records exist
-   • triggers safe official department fallback when no verified sources exist
-   • detects and neutralizes prompt injection / override attempts
-   • safely handles adversarial input queries in the assistant
-   • does not crash when external AI API endpoint is absent (safe fallback)
-
  ✓ src/test/examsScoring.test.ts (7 tests)
-   • prohibits ordinary students from inspecting private answer keys
-   • allows administrators to inspect answer keys in Admin Studio
-   • creates an exam attempt and records responses securely
-   • executes server-side scoring accurately and updates status to submitted
-   • handles duplicate final submissions idempotently
-   • rejects attempt submission by another student (ownership violation)
-   • enforces single attempt retake policy
 
 Test Files:  4 passed (4)
 Tests:       25 passed (25)
@@ -211,7 +201,7 @@ Outcome: `✓ built in 44.42s` (Zero errors, type-safe).
 
 ## 11. Security Audit Checklist
 
-- [x] **No Secret Key Exposure**: Client code references only `VITE_SUPABASE_ANON_KEY`. Privileged keys (`service_role`, LLM API keys) remain on the server.
+- [x] **No Secret Key Exposure**: Client code references only `VITE_` variables. Privileged keys (`service_role`, LLM API keys) remain on the server.
 - [x] **Private Answer Keys**: Isolated in `question_keys` table with strict RLS prohibiting student read access.
 - [x] **Role Self-Elevation Guard**: PostgreSQL trigger & RLS check enforce that students cannot modify the `role` column on `profiles`.
 - [x] **Server-Side Scoring**: Computed via `submit_exam_attempt` with duration checks, retake limits, and idempotent deduplication.

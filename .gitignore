@@ -1,22 +1,21 @@
 # Dependencies
-node_modules
+node_modules/
 .pnp
 .pnp.js
 
 # Build Outputs
-dist
-dist-ssr
+dist/
+dist-ssr/
 *.local
-build
+build/
 
 # Environment files & Secrets
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 *.pem
 *.key
+*.cert
 
 # Logs
 npm-debug.log*
@@ -26,14 +25,15 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # Testing & Coverage
-coverage
-playwright-report
-test-results
+coverage/
+playwright-report/
+test-results/
+.nyc_output/
 
 # Editor & OS files
 .DS_Store
 Thumbs.db
-.idea
+.idea/
 .vscode/*
 !.vscode/extensions.json
 *.suo

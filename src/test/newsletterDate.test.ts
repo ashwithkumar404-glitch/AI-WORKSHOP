@@ -87,3 +87,4 @@ describe('Newsletter Date & Rolling 10-Day Window (Asia/Kolkata)', () => {
     expect(formatRelativeIST('2026-10-31T10:00:00+05:30', reference)).toBe('3 days ago');
   });
 });
+

@@ -96,3 +96,4 @@ describe('RBAC & Row Level Security Enforcement', () => {
     }).toThrow(/Forbidden/);
   });
 });
+

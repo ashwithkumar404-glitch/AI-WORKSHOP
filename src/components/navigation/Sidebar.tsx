@@ -160,3 +160,4 @@ export const Sidebar: React.FC<SidebarProps> = ({ onProfileClick }) => {
     </aside>
   );
 };
+

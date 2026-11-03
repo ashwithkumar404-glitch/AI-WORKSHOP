@@ -125,3 +125,4 @@ export const ExamCard: React.FC<ExamCardProps> = ({
     </Card>
   );
 };
+
