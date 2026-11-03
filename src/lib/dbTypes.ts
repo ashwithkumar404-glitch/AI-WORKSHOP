@@ -94,13 +94,13 @@ export interface ExamResponse {
   saved_at: string;
 }
 
-export type NewsletterCategory = 
-  | 'Academics' 
-  | 'Campus Life' 
-  | 'Placements' 
-  | 'Research & Innovation' 
-  | 'Events' 
-  | 'Sports & Culture' 
+export type NewsletterCategory =
+  | 'Academics'
+  | 'Campus Life'
+  | 'Placements'
+  | 'Research & Innovation'
+  | 'Events'
+  | 'Sports & Culture'
   | 'Notices';
 
 export type NewsletterStatus = 'draft' | 'published' | 'archived';
@@ -122,14 +122,14 @@ export interface Newsletter {
   updated_at: string;
 }
 
-export type KnowledgeCategory = 
-  | 'Admissions' 
-  | 'Academics & Regulations' 
-  | 'Examinations & Grading' 
-  | 'Departments' 
-  | 'Campus & Hostels' 
-  | 'Placements & Training' 
-  | 'Student Clubs' 
+export type KnowledgeCategory =
+  | 'Admissions'
+  | 'Academics & Regulations'
+  | 'Examinations & Grading'
+  | 'Departments'
+  | 'Campus & Hostels'
+  | 'Placements & Training'
+  | 'Student Clubs'
   | 'Fees & Scholarships';
 
 export type KnowledgeStatus = 'pending' | 'approved' | 'rejected';

@@ -7,6 +7,7 @@ import { ActiveExamRunner } from './ActiveExamRunner';
 import { ExamResultView } from './ExamResultView';
 import { MyPerformanceSection } from './MyPerformanceSection';
 import { PdfToMcqGeneratorModal } from './PdfToMcqGeneratorModal';
+import { CustomDrillLauncherModal } from './CustomDrillLauncherModal';
 import { Card } from '@/components/common/Card';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
@@ -33,6 +34,7 @@ export const ExamsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [isDrillModalOpen, setIsDrillModalOpen] = useState(false);
 
   // Active state handlers
   const [runningExamId, setRunningExamId] = useState<string | null>(null);
@@ -152,11 +154,21 @@ export const ExamsPage: React.FC = () => {
           <Button
             variant="accent"
             size="sm"
-            onClick={() => setIsPdfModalOpen(true)}
+            onClick={() => setIsDrillModalOpen(true)}
             className="text-xs"
           >
+            <Clock className="w-4 h-4 mr-1.5" />
+            Custom Drill (5, 10, 25, 50 MCQs)
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsPdfModalOpen(true)}
+            className="text-xs border-slate-600 text-white hover:bg-slate-800"
+          >
             <FileUp className="w-4 h-4 mr-1.5" />
-            PDF-to-MCQ Generator
+            PDF-to-MCQ
           </Button>
 
           <div className="bg-campus-navy-900/90 p-1.5 rounded-2xl border border-campus-navy-700 flex items-center shrink-0">
@@ -260,6 +272,16 @@ export const ExamsPage: React.FC = () => {
       <PdfToMcqGeneratorModal
         isOpen={isPdfModalOpen}
         onClose={() => setIsPdfModalOpen(false)}
+        onExamCreated={(newExamId) => {
+          loadData();
+          handleStartExam(newExamId);
+        }}
+      />
+
+      {/* Quick Custom Drill Modal */}
+      <CustomDrillLauncherModal
+        isOpen={isDrillModalOpen}
+        onClose={() => setIsDrillModalOpen(false)}
         onExamCreated={(newExamId) => {
           loadData();
           handleStartExam(newExamId);

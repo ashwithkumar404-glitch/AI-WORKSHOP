@@ -1,11 +1,11 @@
-import { 
-  UserProfile, 
-  Exam, 
-  Question, 
-  QuestionKey, 
-  ExamAttempt, 
-  ExamResponse, 
-  Newsletter, 
+import {
+  UserProfile,
+  Exam,
+  Question,
+  QuestionKey,
+  ExamAttempt,
+  ExamResponse,
+  Newsletter,
   KnowledgeDocument,
   AuditLog,
   JobOpportunity,
@@ -286,7 +286,7 @@ class LocalRepository {
 
     // Check existing attempts for retake policy
     const existing = this.getAttempts().filter(a => a.exam_id === examId && a.student_id === currentUser.id);
-    
+
     // Check if an in-progress attempt is already active
     const active = existing.find(a => a.status === 'in_progress');
     if (active) {

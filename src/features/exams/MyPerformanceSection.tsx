@@ -5,6 +5,7 @@ import { Card } from '@/components/common/Card';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
 import { PerformanceCharts } from './PerformanceCharts';
+import { SkillGapAnalysis } from './SkillGapAnalysis';
 import { 
   Award, 
   Clock, 
@@ -84,6 +85,9 @@ export const MyPerformanceSection: React.FC<MyPerformanceSectionProps> = ({
           </div>
         </Card>
       </div>
+
+      {/* Topic-Level Performance Analytics & Personalized Skill-Gap Analysis */}
+      <SkillGapAnalysis attempts={completedAttempts} />
 
       {/* Longitudinal Performance Trend Chart */}
       <Card>

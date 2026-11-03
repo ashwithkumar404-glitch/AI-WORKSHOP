@@ -205,3 +205,4 @@ npm test
 - `src/test/aiAssistant.test.ts`: Verifies grounding, document citations, and hallucination rejection.
 
 **Summary**: 5 test suites, 36 tests passed (100% pass rate). Production build cleanly verified via `npm run build`.
+

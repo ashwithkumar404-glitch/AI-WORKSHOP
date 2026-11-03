@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { ExamManager } from './ExamManager';
+import { JobManager } from './JobManager';
+import { StudyResourceManager } from './StudyResourceManager';
+import { CertificateApprovalStudio } from './CertificateApprovalStudio';
 import { NewsletterStudio } from './NewsletterStudio';
 import { KnowledgeBaseManager } from './KnowledgeBaseManager';
 import { UserRoleManager } from './UserRoleManager';
 import { SystemHealth } from './SystemHealth';
 import { 
   GraduationCap, 
+  Briefcase,
+  BookOpen,
+  FileCheck2,
   Newspaper, 
-  BookOpen, 
   Users, 
   Activity, 
   ShieldCheck 
@@ -16,13 +21,18 @@ import {
 
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'exams' | 'newsletters' | 'knowledge' | 'roles' | 'health'>('exams');
+  const [activeTab, setActiveTab] = useState<
+    'exams' | 'jobs' | 'resources' | 'approvals' | 'newsletters' | 'knowledge' | 'roles' | 'health'
+  >('exams');
 
   const tabs = [
     { id: 'exams', label: 'Examinations', icon: GraduationCap },
-    { id: 'newsletters', label: 'Newsletter Studio', icon: Newspaper },
+    { id: 'jobs', label: 'Placement Drives', icon: Briefcase },
+    { id: 'resources', label: 'Study Resources', icon: BookOpen },
+    { id: 'approvals', label: 'Certificates & Events', icon: FileCheck2 },
+    { id: 'newsletters', label: 'Newsletters & Notices', icon: Newspaper },
     { id: 'knowledge', label: 'Knowledge Base', icon: BookOpen },
-    { id: 'roles', label: 'User Roles', icon: Users },
+    { id: 'roles', label: 'User Roles & Students', icon: Users },
     { id: 'health', label: 'System Health', icon: Activity },
   ];
 
@@ -38,17 +48,17 @@ export const AdminDashboard: React.FC = () => {
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-            SCEM Administrator Studio
+            SCEM Placement & Faculty Studio
           </h1>
           <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
-            Institutional management suite for examination curricula, verified weekly publications, AI grounding documents, and security roles.
+            Institutional management suite for examination curricula, campus recruitment drives, study resources, certificate approvals, and student permissions.
           </p>
         </div>
 
         <div className="p-3 bg-campus-navy-900/90 rounded-2xl border border-campus-navy-800 text-xs space-y-1">
           <p className="text-slate-400">Authenticated Administrator:</p>
           <p className="font-bold text-white text-sm">{user?.full_name}</p>
-          <p className="text-[11px] text-campus-teal-300">{user?.department || 'Administration'}</p>
+          <p className="text-[11px] text-campus-teal-300">{user?.department || 'Department of Placements & Training'}</p>
         </div>
       </div>
 
@@ -61,7 +71,7 @@ export const AdminDashboard: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shrink-0 ${
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shrink-0 ${
                 isActive
                   ? 'bg-campus-navy-800 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -77,6 +87,9 @@ export const AdminDashboard: React.FC = () => {
       {/* Tab Panels */}
       <div>
         {activeTab === 'exams' && <ExamManager />}
+        {activeTab === 'jobs' && <JobManager />}
+        {activeTab === 'resources' && <StudyResourceManager />}
+        {activeTab === 'approvals' && <CertificateApprovalStudio />}
         {activeTab === 'newsletters' && <NewsletterStudio />}
         {activeTab === 'knowledge' && <KnowledgeBaseManager />}
         {activeTab === 'roles' && <UserRoleManager />}
@@ -85,4 +98,3 @@ export const AdminDashboard: React.FC = () => {
     </div>
   );
 };
-

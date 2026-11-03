@@ -4,15 +4,15 @@ import { Button } from '@/components/common/Button';
 import { Exam, Question, QuestionKey } from '@/lib/dbTypes';
 import { dbRepository } from '@/lib/storage';
 import { useAuth } from '@/features/auth/AuthContext';
-import { 
-  FileText, 
-  UploadCloud, 
-  CheckCircle2, 
-  AlertCircle, 
-  Sparkles, 
-  Loader2, 
-  Play, 
-  Sliders, 
+import {
+  FileText,
+  UploadCloud,
+  CheckCircle2,
+  AlertCircle,
+  Sparkles,
+  Loader2,
+  Play,
+  Sliders,
   Layers,
   HelpCircle,
   Eye
@@ -37,7 +37,7 @@ export const PdfToMcqGeneratorModal: React.FC<PdfToMcqGeneratorModalProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  
+
   // Preview stage state
   const [previewQuestions, setPreviewQuestions] = useState<Question[] | null>(null);
   const [previewKeys, setPreviewKeys] = useState<QuestionKey[] | null>(null);
@@ -93,8 +93,8 @@ export const PdfToMcqGeneratorModal: React.FC<PdfToMcqGeneratorModalProps> = ({
 
       // Synthesize realistic, rigorous questions tailored to the count
       const examId = `gen-exam-${Date.now()}`;
-      const examTitle = selectedFile 
-        ? `Custom Assessment: ${selectedFile.name.replace(/\.[^/.]+$/, '')}` 
+      const examTitle = selectedFile
+        ? `Custom Assessment: ${selectedFile.name.replace(/\.[^/.]+$/, '')}`
         : `Custom Assessment: Generated Practice (${new Date().toLocaleDateString()})`;
 
       const generatedQuestions: Question[] = [];
@@ -215,10 +215,10 @@ export const PdfToMcqGeneratorModal: React.FC<PdfToMcqGeneratorModalProps> = ({
 
   const handleLaunchExam = () => {
     if (!generatedExam || !previewQuestions || !previewKeys) return;
-    
+
     // Ingest into storage repository
     dbRepository.addGeneratedExam(generatedExam, previewQuestions, previewKeys);
-    
+
     onClose();
     onExamCreated(generatedExam.id);
   };
@@ -307,11 +307,10 @@ export const PdfToMcqGeneratorModal: React.FC<PdfToMcqGeneratorModalProps> = ({
                       setQuestionCount(count);
                       setDurationMinutes(count <= 5 ? 10 : count <= 10 ? 15 : count <= 25 ? 30 : 60);
                     }}
-                    className={`py-1.5 text-xs font-bold rounded-lg border transition-all ${
-                      questionCount === count
+                    className={`py-1.5 text-xs font-bold rounded-lg border transition-all ${questionCount === count
                         ? 'bg-campus-teal-600 text-white border-campus-teal-600 shadow-sm'
                         : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                    }`}
+                      }`}
                   >
                     {count} MCQs
                   </button>
@@ -395,11 +394,10 @@ export const PdfToMcqGeneratorModal: React.FC<PdfToMcqGeneratorModalProps> = ({
                     {q.options.map((opt) => (
                       <div
                         key={opt.id}
-                        className={`p-2 rounded-lg text-xs border ${
-                          key?.correct_option_id === opt.id
+                        className={`p-2 rounded-lg text-xs border ${key?.correct_option_id === opt.id
                             ? 'bg-emerald-50 border-emerald-200 text-emerald-900 font-semibold'
                             : 'bg-slate-50 border-slate-100 text-slate-700'
-                        }`}
+                          }`}
                       >
                         <span className="font-bold mr-1.5">{opt.id}.</span>
                         {opt.text}
