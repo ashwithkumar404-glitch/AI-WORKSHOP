@@ -50,8 +50,8 @@ To coordinate simultaneous feature development among five engineers without merg
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/pvnkulal45-svg/campuspilot-ai.git
-cd campuspilot-ai
+git clone https://github.com/ashwithkumar404-glitch/AI-WORKSHOP.git
+cd AI-WORKSHOP
 
 # 2. Install dependencies
 npm install
